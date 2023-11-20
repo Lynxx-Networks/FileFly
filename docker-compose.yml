@@ -1,0 +1,9 @@
+version: '3'
+services:
+  filefly:
+    image: madeofpendletonwool/filefly:latest
+    ports:
+    # Filefly Port
+      - "8052:8000"
+    volumes:
+      - /home/user/filefly/data:/filefly
