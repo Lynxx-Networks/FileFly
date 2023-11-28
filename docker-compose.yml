@@ -2,8 +2,13 @@ version: '3'
 services:
   filefly:
     image: madeofpendletonwool/filefly:latest
+    environment:
+      USERNAME: "3rt"
+      PASSWORD: 'password'
+      SECRET_KEY: '' # 32 character string alpha-num - If not set it will auto generate
     ports:
     # Filefly Port
       - "8052:8000"
     volumes:
-      - /home/user/filefly/data:/filefly
+      - /home/user/filefly/data:/data
+      - /home/user/filefly/sqllite:/sql
