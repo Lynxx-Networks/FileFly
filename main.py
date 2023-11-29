@@ -102,7 +102,7 @@ def get_password_hash(password):
 
 
 def get_user(db: Session, username: str):
-    user = db.query(User).filter(User.username == username).first()
+    user = db.query(UserInDB).filter(UserInDB.username == username).first()
     if user:
         print(f"Found user: {user.username}")
     else:
@@ -171,7 +171,7 @@ async def startup_event():
     if not default_user:
         # Create and add the new default user
         hashed_password = get_password_hash(PASSWORD)
-        new_user = User(username=USERNAME, hashed_password=hashed_password, disabled=False)
+        new_user = UserInDB(username=USERNAME, hashed_password=hashed_password, disabled=False)
         db.add(new_user)
         db.commit()
 
@@ -189,13 +189,13 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.get("/files/me", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_active_user)):
+@app.get("/files/me", response_model=UserInDB)
+async def read_users_me(current_user: UserInDB = Depends(get_current_active_user)):
     return current_user
 
 
 @app.get("/files_v2/{file_path:path}")
-async def download_v2_file(file_path: str, current_user: User = Depends(get_current_active_user)):
+async def download_v2_file(file_path: str, current_user: UserInDB = Depends(get_current_active_user)):
     # current_user now contains the authenticated user's information
 
     full_path = Path(FOLDER_PATH) / file_path
@@ -205,14 +205,14 @@ async def download_v2_file(file_path: str, current_user: User = Depends(get_curr
 
 
 @app.get("/files_v2/list_all")
-async def list_all_files(current_user: User = Depends(get_current_active_user)):
+async def list_all_files(current_user: UserInDB = Depends(get_current_active_user)):
     # Ensure that current_user is authenticated
     file_list = list_files_in_directory(FOLDER_PATH)
     return file_list
 
 
 @app.post("/register")
-async def register_user(user_data: UserRegistration, current_user: User = Depends(get_current_active_user),
+async def register_user(user_data: UserRegistration, current_user: UserInDB = Depends(get_current_active_user),
                         db: Session = Depends(get_db)):
     # Check if the user already exists
     existing_user = get_user(db, user_data.username)
@@ -223,7 +223,7 @@ async def register_user(user_data: UserRegistration, current_user: User = Depend
     hashed_password = get_password_hash(user_data.password)
 
     # Create new user object
-    new_user = User(username=user_data.username, hashed_password=hashed_password, disabled=False)
+    new_user = UserInDB(username=user_data.username, hashed_password=hashed_password, disabled=False)
 
     # Add new user to the database
     db.add(new_user)
