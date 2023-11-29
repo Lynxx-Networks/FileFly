@@ -82,9 +82,16 @@ class TokenData(BaseModel):
     username: str or None = None
 
 
-class User(BaseModel):
+class User(Base):  # SQLAlchemy ORM model
+    __tablename__ = "users"
+
+    username = Column(String, primary_key=True, index=True)
+    hashed_password = Column(String)
+    disabled = Column(Boolean, default=False)
+
+class UserSchema(BaseModel):  # Pydantic model for API validation
     username: str
-    disabled: bool or None = None
+    disabled: bool = False
 
 
 class UserInDB(User):
@@ -172,14 +179,13 @@ async def startup_event():
     db = SessionLocal()
 
     # Check if the default user exists
-    # default_user = get_user(db, USERNAME)
-    # print(default_user)
-    # if not default_user:
-    # Create and add the new default user
-    hashed_password = get_password_hash(PASSWORD)
-    new_user = User(username=USERNAME, hashed_password=hashed_password, disabled=False)
-    db.add(new_user)
-    db.commit()
+    default_user = get_user(db, USERNAME)
+    if not default_user:
+        # Create and add the new default user
+        hashed_password = get_password_hash(PASSWORD)
+        new_user = User(username=USERNAME, hashed_password=hashed_password, disabled=False)
+        db.add(new_user)
+        db.commit()
 
     db.close()
 
