@@ -81,14 +81,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str or None = None
 
-
-class User(Base):  # SQLAlchemy ORM model
-    __tablename__ = "users"
-
-    username = Column(String, primary_key=True, index=True)
-    hashed_password = Column(String)
-    disabled = Column(Boolean, default=False)
-
 class UserSchema(BaseModel):  # Pydantic model for API validation
     username: str
     disabled: bool = False
