@@ -161,21 +161,26 @@ async def get_current_active_user(current_user: UserInDB = Depends(get_current_u
 
 @app.on_event("startup")
 async def startup_event():
+    print("Initializing database...")
     init_db()  # Initialize the database
+    print("Database initialized.")
 
     # Create session for database operations
     db = SessionLocal()
 
-    # Check if the default user exists
+    print("Checking for default user...")
     default_user = get_user(db, USERNAME)
     if not default_user:
-        # Create and add the new default user
+        print("Creating new user...")
         hashed_password = get_password_hash(PASSWORD)
         new_user = UserInDB(username=USERNAME, hashed_password=hashed_password, disabled=False)
         db.add(new_user)
         db.commit()
+        print("New user created.")
 
     db.close()
+    print("Startup event completed.")
+
 
 
 @app.post("/token", response_model=Token)
