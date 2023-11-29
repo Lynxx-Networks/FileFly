@@ -15,21 +15,13 @@ from sqlalchemy import create_engine, Column, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import secrets
+from sqlalchemy.orm import Mapped
 
 USERNAME = os.getenv("DEFAULT_USERNAME", "admin")
 PASSWORD = os.getenv("DEFAULT_PASSWORD", "P@ssW0rd!")
 
 DATABASE_URL = "sqlite:///./sql/filefly.db"
 Base = declarative_base()
-
-
-class User(Base):
-    __tablename__ = "users"
-
-    username = Column(String, primary_key=True, index=True)
-    hashed_password = Column(String)
-    disabled = Column(Boolean, default=False)
-
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -81,13 +73,17 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str or None = None
 
+
 class UserSchema(BaseModel):  # Pydantic model for API validation
     username: str
     disabled: bool = False
 
 
-class UserInDB(User):
-    hashed_password: str
+class UserInDB(Base):  # Extending SQLAlchemy Base
+    __tablename__ = "users"
+    username: Mapped[str] = Column(String, primary_key=True, index=True)
+    hashed_password: Mapped[str] = Column(String)
+    disabled: Mapped[bool] = Column(Boolean, default=False)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
