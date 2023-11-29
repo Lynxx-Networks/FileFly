@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.12.0a7-slim
+FROM python:3.10.13-bookworm
 
 # Set the maintainer label
 LABEL maintainer="Collin Pendleton <collinp@collinpendleton.com>"
@@ -21,7 +21,8 @@ COPY ./requirements.txt /
 RUN pip install --no-cache-dir -r /requirements.txt
 
 # Clone the Git repository
-RUN git clone https://github.com/Lynxx-Networks/FileFly.git /filefly
+RUN mkdir /filefly
+COPY . /filefly
 RUN chmod -R 755 /filefly
 
 # Set the working directory
@@ -34,4 +35,4 @@ EXPOSE 8000
 
 # Set the entrypoint as Uvicorn server running the app
 ENTRYPOINT ["uvicorn"]
-CMD ["main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]

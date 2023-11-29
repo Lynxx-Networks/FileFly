@@ -16,9 +16,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import secrets
 from sqlalchemy.orm import Mapped
+import logging
 
-USERNAME = os.getenv("DEFAULT_USERNAME", "admin")
-PASSWORD = os.getenv("DEFAULT_PASSWORD", "P@ssW0rd!")
+logging.basicConfig(filename='/filefly/logs.log', encoding='utf-8', level=logging.DEBUG)
+
+USERNAME = os.getenv("USERNAME", "admin")
+PASSWORD = os.getenv("PASSWORD", "P@ssW0rd!")
 
 DATABASE_URL = "sqlite:///./sql/filefly.db"
 Base = declarative_base()
@@ -102,12 +105,12 @@ def get_password_hash(password):
 
 
 def get_user(db: Session, username: str):
-    user = db.query(UserInDB).filter(UserInDB.username == username).first()
-    if user:
-        print(f"Found user: {user.username}")
-    else:
-        print("User not found.")
-    return user
+    try:
+        user = db.query(UserInDB).filter(UserInDB.username == username).first()
+
+        return user
+    except Exception as e:
+        return None
 
 
 def authenticate_user(db: Session, username: str, password: str):
@@ -161,27 +164,28 @@ async def get_current_active_user(current_user: UserInDB = Depends(get_current_u
 
 @app.on_event("startup")
 async def startup_event():
-    print("Initializing database...")
-    init_db()  # Initialize the database
-    print("Database initialized.")
+    init_db()
 
-    # Create session for database operations
     db = SessionLocal()
 
-    print("Checking for default user...")
-    default_user = get_user(db, USERNAME)
-    if not default_user:
-        print("Creating new user...")
-        hashed_password = get_password_hash(PASSWORD)
-        new_user = UserInDB(username=USERNAME, hashed_password=hashed_password, disabled=False)
-        db.add(new_user)
-        db.commit()
-        print("New user created.")
-
-    db.close()
-    print("Startup event completed.")
-
-
+    try:
+        default_user = db.query(UserInDB).filter(UserInDB.username == USERNAME).first()
+        if default_user:
+            logging.debug("Default user already exists.")
+        else:
+            logging.debug("Creating new user...")
+            logging.debug(USERNAME)
+            hashed_password = get_password_hash(PASSWORD)
+            new_user = UserInDB(username=USERNAME, hashed_password=hashed_password, disabled=False)
+            db.add(new_user)
+            db.commit()
+            logging.debug("New user created.")
+    except Exception as e:
+        logging.error(f"Error during database query: {e}")
+        raise  # Re-raise the exception to make it visible
+    finally:
+        db.close()
+        logging.debug("Startup event completed....")
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
