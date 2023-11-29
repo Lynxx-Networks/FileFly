@@ -172,13 +172,14 @@ async def startup_event():
     db = SessionLocal()
 
     # Check if the default user exists
-    default_user = get_user(db, USERNAME)
-    if not default_user:
-        # Create and add the new default user
-        hashed_password = get_password_hash(PASSWORD)
-        new_user = User(username=USERNAME, hashed_password=hashed_password, disabled=False)
-        db.add(new_user)
-        db.commit()
+    # default_user = get_user(db, USERNAME)
+    # print(default_user)
+    # if not default_user:
+    # Create and add the new default user
+    hashed_password = get_password_hash(PASSWORD)
+    new_user = User(username=USERNAME, hashed_password=hashed_password, disabled=False)
+    db.add(new_user)
+    db.commit()
 
     db.close()
 
