@@ -1,34 +1,39 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10.13-bookworm
+# Use Alpine Linux as the base image
+FROM alpine:latest
 
 # Set the maintainer label
 LABEL maintainer="Collin Pendleton <collinp@collinpendleton.com>"
 
-# Set non-interactive frontend (useful for Docker builds)
-ARG DEBIAN_FRONTEND=noninteractive
+# Install Python and other dependencies
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    git \
+    curl \
+    gcc \
+    musl-dev \
+    libffi-dev \
+    zlib-dev \
+    jpeg-dev \
+    mariadb-connector-c \
+    postgresql-dev \
+    openssl-dev
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends git curl gcc libffi-dev zlib1g-dev libjpeg-dev mariadb-client libpq-dev openssl && \
-    rm -rf /var/lib/apt/lists/*
+# Create directories
+RUN mkdir /sql && mkdir /filefly
 
-RUN apt-get upgrade
-
-RUN mkdir /sql
-
-# Copy the requirements file and install Python dependencies
+# Copy the requirements file
 COPY ./requirements.txt /
-RUN pip install --no-cache-dir -r /requirements.txt
 
-# Clone the Git repository
-RUN mkdir /filefly
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r /requirements.txt
+
+# Copy the application code
 COPY . /filefly
 RUN chmod -R 755 /filefly
 
 # Set the working directory
 WORKDIR /filefly
-COPY ./main.py /filefly
-RUN mkdir -p /filefly/sql
 
 # Expose the port the app runs on
 EXPOSE 8000

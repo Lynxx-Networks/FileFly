@@ -26,7 +26,8 @@ services:
     image: madeofpendletonwool/filefly:latest
     environment:
       USERNAME: "admin"
-      PASSWORD: 'P@ssW0rd!'
+      # Enter password below between single-quotes
+      PASSWORD: ''
       SECRET_KEY: '' # 32 character string alpha-num - If not set it will auto generate
     ports:
     # Filefly Port
@@ -63,7 +64,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
   -d 'username=your_username&password=your_password'
 ```
-Using the Token to Download a File:
+#### Using the Token to Download a File:
 
 Replace your_jwt_token with the obtained token and file_path with the desired file's path.
 
@@ -93,6 +94,28 @@ curl -X 'POST' \
         "username": "new_username",
         "password": "new_password"
       }'
+```
+
+Make sure to replace URLs, port numbers, and paths with the correct values for your setup.
+
+#### Uploading a File:
+
+To upload a file, you'll need to send a POST request with the local filename/location that you want to upload. Use the JWT token from /token endpoint above.
+
+Replace your_jwt_token, subdirectory, destinationb_filename, and file with appropriate values.
+
+The subdirectory is the path where you want to upload to on the filefly server. If you want to upload to the root just use '/' as the value for the subdir
+
+The destination_filename is simply the name you want to call the file after uploading
+
+The file value is the location to the file on your local computer. The @ is required, but after that it can be any file on your local computer. 
+```
+curl -X 'POST' \                                                                                  23-12-04 - 12:25:19
+  'http://localhost:8052/upload' \
+  -H 'Authorization: Bearer your_jwt_token' \
+  -F 'subdirectory=directory/to/upload/to/' \
+  -F 'destination_filename=myuploadedfile' \
+  -F 'file=@/local/path/to/myfile'
 ```
 
 Make sure to replace URLs, port numbers, and paths with the correct values for your setup.
