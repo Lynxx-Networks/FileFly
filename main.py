@@ -197,12 +197,21 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 @app.get("/files_v2/{file_path:path}")
 async def download_v2_file(file_path: str, current_user: UserInDB = Depends(get_current_active_user)):
-    # current_user now contains the authenticated user's information
+    # Ensure that current_user is authenticated
 
-    full_path = Path(FOLDER_PATH) / file_path
+    # Normalize and validate the file path
+    normalized_path = os.path.normpath(file_path)
+    full_path = Path(FOLDER_PATH) / normalized_path
+
+    # Check if the path is within the intended directory
+    if not os.path.commonpath([FOLDER_PATH, str(full_path)]) == FOLDER_PATH:
+        raise HTTPException(status_code=400, detail="Invalid file path")
+
+    # Serve the file if it exists
     if full_path.is_file():
         return FileResponse(str(full_path))
-    raise HTTPException(status_code=404, detail="File not found")
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
 
 
 @app.post("/register")
@@ -247,7 +256,7 @@ async def download_file(file_path: str, credentials: HTTPBasicCredentials = Depe
     full_path = Path(FOLDER_PATH) / normalized_path
 
     # Check if the path is within the intended directory
-    if not os.path.commonpath([FOLDER_PATH, full_path]) == FOLDER_PATH:
+    if not os.path.commonpath([FOLDER_PATH, str(full_path)]) == FOLDER_PATH:
         raise HTTPException(status_code=400, detail="Invalid file path")
 
     # Serve the file if it exists
