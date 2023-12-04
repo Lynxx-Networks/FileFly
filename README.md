@@ -72,13 +72,7 @@ bash
 
     curl -H "Authorization: Bearer your_jwt_token" http://localhost:8052/files_v2/file_path --output downloaded_file
 
-#### Listing All Files (v2):
 
-To list all files, use the JWT token obtained from the /token endpoint.
-
-```
-curl -H "Authorization: Bearer your_jwt_token" http://localhost:8052/files_v2/list_all
-```
 #### Registering a New User:
 
 To register a new user, you'll need to send a POST request with the username and password for the user you want to create. Use the JWT token from /token endpoint above.

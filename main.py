@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 from fastapi.responses import FileResponse
 from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File, Form, Query
@@ -203,52 +205,6 @@ async def download_v2_file(file_path: str, current_user: UserInDB = Depends(get_
     raise HTTPException(status_code=404, detail="File not found")
 
 
-def sanitize_folder_path(folder_path: str, base_path: str):
-    # Sanitize the folder path to prevent path traversal
-    normalized_path = os.path.normpath(folder_path)
-    # Ensure the path stays within the base path
-    return base_path if normalized_path == '.' else os.path.join(base_path, normalized_path)
-
-
-def list_files_in_directory(path: str):
-    if not os.path.exists(path):
-        raise HTTPException(status_code=404, detail="Directory not found")
-    if not os.path.isdir(path):
-        raise HTTPException(status_code=400, detail="Not a directory")
-    return [file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file))]
-
-
-def safe_join(base, *paths):
-    """Safely join paths to the base directory."""
-    final_path = base
-    for path in paths:
-        final_path = os.path.normpath(os.path.join(final_path, path))
-        if not final_path.startswith(base):
-            raise HTTPException(status_code=400, detail="Invalid path")
-    return final_path
-
-@app.get("/files_v2/list_all")
-async def list_all_files(folder_path: Optional[str] = Query(None),
-                         current_user: UserInDB = Depends(get_current_active_user)):
-    # Logging for diagnostic purposes
-    logging.info(f"Received folder_path: {folder_path}")
-    logging.info(f"FOLDER_PATH: {FOLDER_PATH}")
-
-    # Use the provided folder path or default to FOLDER_PATH
-    target_path = safe_join(FOLDER_PATH, folder_path) if folder_path else FOLDER_PATH
-    logging.info(f"Target path for listing files: {target_path}")
-
-    if not os.path.exists(target_path):
-        logging.error(f"Directory does not exist: {target_path}")
-        raise HTTPException(status_code=404, detail="Directory not found")
-    if not os.path.isdir(target_path):
-        logging.error(f"Not a directory: {target_path}")
-        raise HTTPException(status_code=400, detail="Not a directory")
-
-    file_list = [file for file in os.listdir(target_path) if os.path.isfile(os.path.join(target_path, file))]
-    logging.info(f"Files found: {file_list}")
-    return file_list
-
 @app.post("/register")
 async def register_user(user_data: UserRegistration, current_user: UserInDB = Depends(get_current_active_user),
                         db: Session = Depends(get_db)):
@@ -301,9 +257,21 @@ async def download_file(file_path: str, credentials: HTTPBasicCredentials = Depe
         raise HTTPException(status_code=404, detail="File not found")
 
 
-def sanitize_path_component(component):
-    # Sanitize each component of the path to prevent path traversal
-    return os.path.basename(component)
+def sanitize_path_component(path_component: str) -> str:
+    # Remove any unsafe characters or patterns from each part of the path
+    # This example is simplistic; consider using a library like `python-magic` for more robust handling
+    safe_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+    return ''.join(c for c in path_component if c in safe_chars)
+
+
+def safe_join(base, *paths):
+    """Safely join paths to the base directory."""
+    final_path = base
+    for path in paths:
+        final_path = os.path.normpath(os.path.join(final_path, path))
+        if not final_path.startswith(base):
+            raise HTTPException(status_code=400, detail="Invalid path")
+    return final_path
 
 
 @app.post("/upload")
@@ -311,16 +279,19 @@ async def upload_file(subdirectory: str = Form(...), destination_filename: str =
                       file: UploadFile = File(...),
                       current_user: UserInDB = Depends(get_current_active_user),
                       db: Session = Depends(get_db)):
+    # Decode URL-encoded strings
+    subdirectory = unquote(subdirectory)
+    destination_filename = unquote(destination_filename)
+
     # Normalize and sanitize the subdirectory path
-    normalized_subdirectory = os.path.normpath(subdirectory)
-    subdirectory_parts = normalized_subdirectory.split(os.sep)
-    sanitized_subdirectory_parts = [sanitize_path_component(part) for part in subdirectory_parts]
+    sanitized_subdirectory_parts = [sanitize_path_component(part) for part in subdirectory.split(os.sep)]
     sanitized_subdirectory = os.path.join(*sanitized_subdirectory_parts)
 
+    # Sanitize the destination filename
     sanitized_filename = sanitize_path_component(destination_filename)
 
-    # Define the full file path
-    full_directory = os.path.join(FOLDER_PATH, sanitized_subdirectory)
+    # Safely define the full file path
+    full_directory = safe_join(FOLDER_PATH, sanitized_subdirectory)
     file_location = os.path.join(full_directory, sanitized_filename)
 
     # Create subdirectory if it doesn't exist
