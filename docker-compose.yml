@@ -11,4 +11,4 @@ services:
       - "8052:8000"
     volumes:
       - /home/user/filefly/data:/data
-      - /home/user/filefly/sqllite:/filefly/sql
+      - /home/user/filefly/sqllite:/sql

@@ -26,7 +26,7 @@ logging.basicConfig(filename='/filefly/logs.log', encoding='utf-8', level=loggin
 USERNAME = os.getenv("USERNAME", "admin")
 PASSWORD = os.getenv("PASSWORD", "P@ssW0rd!")
 
-DATABASE_URL = "sqlite:///./sql/filefly.db"
+DATABASE_URL = "sqlite:////sql/filefly.db"
 Base = declarative_base()
 
 engine = create_engine(DATABASE_URL)

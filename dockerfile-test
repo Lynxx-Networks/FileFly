@@ -21,9 +21,8 @@ RUN apk add --no-cache \
 
 # Create directories
 RUN mkdir /sql && mkdir /filefly
-
-# Copy the requirements file
-COPY ./requirements.txt /
+RUN mkdir /filefly/sql
+RUN chmod -R 777 /sql && chmod -R 777 /filefly && chmod -R 777 /filefly/sql
 
 # Setup Python environment
 RUN python3 -m venv /opt/venv
@@ -32,7 +31,6 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Install Python packages
 COPY ./tests/requirements.txt /
 RUN /opt/venv/bin/pip install --no-cache-dir -r /requirements.txt
-
 
 # Copy the application code
 COPY . /filefly
@@ -45,5 +43,4 @@ WORKDIR /filefly
 EXPOSE 8000
 
 # Set the entrypoint as Uvicorn server running the app
-ENTRYPOINT ["uvicorn"]
-CMD ["main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+ENTRYPOINT ["pytest", "/filefly/tests/test_main.py"]
