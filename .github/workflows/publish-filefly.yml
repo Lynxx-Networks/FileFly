@@ -25,12 +25,15 @@ jobs:
       uses: docker/metadata-action@v3
       with:
         images: ${{ secrets.DOCKER_USERNAME }}/filefly # Replace with your Docker Hub username and image name
+        
+    - name: Check location
+      run: pwd
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
       with:
         context: .
-        file: ./dockerfile # Adjust if your Dockerfile has a different path
+        file: dockerfile # Adjust if your Dockerfile has a different path
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
