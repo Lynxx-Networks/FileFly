@@ -1,10 +1,9 @@
 name: Publish Filefly
 
 on:
-  pull_request:
-    types:
-      - closed
-    branches: [ main ]
+  push:
+    branches:
+      - 'main'
 
 jobs:
   test:
