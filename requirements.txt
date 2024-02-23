@@ -4,6 +4,6 @@ python-multipart
 pyjwt
 passlib[bcrypt]~=1.7.4
 pydantic~=2.6.1
-starlette~=0.37.1
+starlette~=0.36.3
 SQLAlchemy~=2.0.27
 setuptools~=69.1.0

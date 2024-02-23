@@ -30,7 +30,7 @@ RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Install Python packages
-COPY ./tests/requirements.txt /
+COPY ./requirements.txt /
 RUN /opt/venv/bin/pip install --no-cache-dir -r /requirements.txt
 
 
