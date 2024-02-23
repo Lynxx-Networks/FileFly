@@ -1,8 +1,9 @@
-fastapi~=0.104.1
+fastapi~=0.109.2
 uvicorn
 python-multipart
-python-jose[cryptography]
+pyjwt
 passlib[bcrypt]~=1.7.4
-pydantic~=2.5.1
-starlette~=0.27.0
-SQLAlchemy~=2.0.23
+pydantic~=2.6.1
+starlette~=0.36.3
+SQLAlchemy~=2.0.27
+setuptools~=69.1.0
