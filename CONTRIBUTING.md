@@ -38,7 +38,7 @@ Now, what you've just done is run the web frontend of the project. The backend i
 
 ```
 cd FileFly/
-sudo docker build -t madeofpendletonwool/FileFly:latest
+sudo docker build -t 3rtdevops/FileFly:latest
 ```
 
 Then once built you can run the container with **[Docker Compose](https://github.com/Lynxx-Networks/FileFly/tree/main/deployment/docker/compose-files)**. Once you have the backend running you can connect to the server and sign in with your development frontend. Go to the development server url: http://localhost:8080 by default. Click the connect to different server button:
