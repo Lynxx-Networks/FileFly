@@ -25,4 +25,4 @@ jobs:
         severity_threshold: HIGH
 
     - name: Run tests in the Docker container
-      run: docker run madeofpendletonwool/filefly-test
+      run: docker run 3rtdevops/filefly-test
