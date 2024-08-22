@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Build the Docker test container
-      run: docker build -t madeofpendletonwool/filefly-test . -f dockerfile-test
+      run: docker build -t 3rtdevops/filefly-test . -f dockerfile-test
       
     - name: Scan for vulnerabilities
       uses: crazy-max/ghaction-container-scan@v3
