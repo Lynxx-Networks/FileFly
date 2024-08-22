@@ -23,7 +23,7 @@ password: P@ssW0rd!
 version: '3'
 services:
   filefly:
-    image: madeofpendletonwool/filefly:latest
+    image: 3rtdevops/filefly:latest
     environment:
       USERNAME: "admin"
       # Enter password below between single-quotes
